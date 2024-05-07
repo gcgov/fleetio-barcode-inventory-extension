@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@types/dymo-label-framework": "^1.2.37",
+    "axios": "^1.6.8",
     "bson-objectid": "^2.0.4",
     "vue": "^3.4.0"
   },
