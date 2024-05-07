@@ -1,0 +1,1 @@
+# fleetio-barcode-inventory-extension
