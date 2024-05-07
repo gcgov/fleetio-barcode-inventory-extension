@@ -1,3 +1,6 @@
 {
-  "extends": "./.wxt/tsconfig.json"
+  "extends": "./.wxt/tsconfig.json",
+	// Tells TypeScript to read JS files, as
+	// normally they are ignored as source files
+	"allowJs": true
 }
