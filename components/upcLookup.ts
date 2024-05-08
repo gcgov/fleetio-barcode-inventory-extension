@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export default class upcLookup {
 
     public static baseUrl:string = 'https://api.upcitemdb.com/prod/trial/'
@@ -8,7 +6,12 @@ export default class upcLookup {
     }
 
     static lookupUpc = async ( upc:string='') => {
-       return axios.get(upcLookup.baseUrl+'lookup?upc='+upc)
+       const response = await fetch(upcLookup.baseUrl+'lookup?upc='+upc );
+       const body = await response.json();
+       if(body.code=='OK' && body.items[0]) {
+           return body.items[0]
+       }
+       return null
     }
 
 }
