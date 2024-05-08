@@ -51,16 +51,16 @@ export default defineContentScript({
 
 
       const waitForFieldToExistCallback = async (elm:Element|null) => {
-          console.log('element exists')
+          //console.log('element exists')
           if(elm) {
               //@ts-ignore: value undefined but it really is
               let upcValue = elm?.value ?? ''
-              console.log('upc value: '+upcValue);
+              //console.log('upc value: '+upcValue);
               if (typeof upcValue == 'undefined' || upcValue == null || upcValue == '') {
                   return
               }
 
-              console.log('send upc to background lookup')
+              //console.log('send upc to background lookup')
 
               //do lookup in background
               browser.runtime.sendMessage({upc:upcValue})
@@ -69,14 +69,14 @@ export default defineContentScript({
           }
       }
       const waitForFieldNotToExistCallback = async () => {
-          console.log('Popup is gone')
+          //console.log('Popup is gone')
           waitForElm('#radix-dialog-container input').then(waitForFieldToExistCallback);
       }
 
 
       //9781541736696
 
-      console.log('Watching for "add product" popup');
+      //console.log('Watching for "add product" popup');
       waitForElm('#radix-dialog-container input').then(waitForFieldToExistCallback);
 
 
@@ -84,6 +84,31 @@ export default defineContentScript({
           function(request:{task:string, product:IItem|null}, sender, sendResponse) {
               console.log('update product info on screen')
               console.log(request.product)
+              console.log(request.product?.category)
+              const partNumberEl = document.querySelector('[data-testid="manufacturer_part_number-input-text"]');
+              //@ts-ignore
+              if(partNumberEl) {
+                  console.log(partNumberEl)
+                  //@ts-ignore
+                  partNumberEl.value = request.product?.model ?? ''
+              }
+
+              const upcEl = document.querySelector('[data-testid="upc-input-text"]')
+              //@ts-ignore
+              if(upcEl) {
+                  console.log(upcEl)
+                  //@ts-ignore
+                  upcEl.value = request.product?.upc ?? request.product?.ean ?? ''
+              }
+
+              const categoryEl = document.querySelector('[data-testid="part_category_id-react-select-container"] input');
+              if(categoryEl) {
+                  console.log(categoryEl)
+                  //@ts-ignore
+                  categoryEl.focus()
+                  //@ts-ignore
+                  categoryEl.value =  request.product?.category ?? ''
+              }
           }
       );
 
