@@ -61,10 +61,7 @@ const waitForFieldToExistCallback = async (elm: Element | null) => {
         //@ts-ignore: value undefined but it really is
         a.onclick = ()=>{
             const productInput = document.querySelector('#radix-dialog-container input')
-            const loadingEl = document.getElementById('upc-lookup-loading')
-            if(loadingEl) {
-                loadingEl.style.display = 'block'
-            }
+            setLoading(true)
             browser.runtime.sendMessage({upc: productInput?.value ?? ''
             } ) }
         elm.after(a, loadingDiv)
@@ -88,61 +85,43 @@ const waitForFieldNotToExistCallback = async () => {
 }
 
 const updateFields = async (request: { task: string, product: IItem | null }, sender: Runtime.MessageSender) => {
-    console.log('update product info on screen')
-    console.log(request.product)
-    console.log(request.product?.category)
-    const partNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
-    //@ts-ignore
-    if (partNumberEl) {
-        //@ts-ignore
-        partNumberEl.value = request.product?.model ?? ''
-    }
+    if(request.task=='upcProductFill') {
+        console.log('update product info on screen')
+        console.log(request.product)
 
-    const upcEl = document.querySelector('#radix-dialog-container [data-testid="upc-input-text"]')
-    //@ts-ignore
-    if (upcEl) {
+        //part number field
+        const partNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
         //@ts-ignore
-        upcEl.value = request.product?.upc ?? request.product?.ean ?? ''
-    }
-
-    const descriptionEl = document.querySelector('#radix-dialog-container [name="description"]')
-    //@ts-ignore
-    if (descriptionEl) {
-        //@ts-ignore
-        descriptionEl.value = (request.product?.title ?? '') + " " + (request.product?.description ?? '')
-        descriptionEl.innerHTML = (request.product?.title ?? '') + " " + (request.product?.description ?? '') + " " + (request.product?.dimension ?? '')
-    }
-
-    const categoryEl = document.querySelector('#radix-dialog-container [data-testid="part_category_id-react-select-container"] input');
-    if (categoryEl) {
-        //@ts-ignore
-        categoryEl.value = request.product?.category ?? ''
-        //@ts-ignore
-        categoryEl.focus()
-        categoryEl.dispatchEvent(new Event("input", {
-            'bubbles': true
-        }))
-        setTimeout(() => {
-            let evOptions = {
-                key: 'Enter',
-                code: 'Enter',
-                which: 13,
-                keyCode: 13,
-                'bubbles': true
-            }
-            categoryEl.dispatchEvent(new KeyboardEvent('keydown', evOptions))
-            categoryEl.dispatchEvent(new KeyboardEvent('keyup', evOptions))
-        }, 500)
-    }
-
-    setTimeout(() => {
-        const manufacturerEl = document.querySelector('[data-testid="part_manufacturer_id-react-select-container"] input');
-        if(manufacturerEl) {
+        if (partNumberEl) {
             //@ts-ignore
-            manufacturerEl.value = request.product?.brand ?? ''
+            partNumberEl.value = request.product?.model ?? ''
+        }
+
+        //upc field
+        const upcEl = document.querySelector('#radix-dialog-container [data-testid="upc-input-text"]')
+        //@ts-ignore
+        if (upcEl) {
             //@ts-ignore
-            manufacturerEl.focus()
-            manufacturerEl.dispatchEvent(new Event("input", {
+            upcEl.value = request.product?.upc ?? request.product?.ean ?? ''
+        }
+
+        //description field
+        const descriptionEl = document.querySelector('#radix-dialog-container [name="description"]')
+        //@ts-ignore
+        if (descriptionEl) {
+            //@ts-ignore
+            descriptionEl.value = (request.product?.title ?? '') + " " + (request.product?.description ?? '')
+            descriptionEl.innerHTML = (request.product?.title ?? '') + " " + (request.product?.description ?? '') + " " + (request.product?.dimension ?? '')
+        }
+
+        //category filed
+        const categoryEl = document.querySelector('#radix-dialog-container [data-testid="part_category_id-react-select-container"] input');
+        if (categoryEl) {
+            //@ts-ignore
+            categoryEl.value = request.product?.category ?? ''
+            //@ts-ignore
+            categoryEl.focus()
+            categoryEl.dispatchEvent(new Event("input", {
                 'bubbles': true
             }))
             setTimeout(() => {
@@ -153,18 +132,58 @@ const updateFields = async (request: { task: string, product: IItem | null }, se
                     keyCode: 13,
                     'bubbles': true
                 }
-                manufacturerEl.dispatchEvent(new KeyboardEvent('keydown', evOptions))
-                manufacturerEl.dispatchEvent(new KeyboardEvent('keyup', evOptions))
-
-                const loadingEl = document.getElementById('upc-lookup-loading')
-                if(loadingEl) {
-                    loadingEl.style.display = 'none'
-                }
+                categoryEl.dispatchEvent(new KeyboardEvent('keydown', evOptions))
+                categoryEl.dispatchEvent(new KeyboardEvent('keyup', evOptions))
             }, 500)
         }
 
+        //manufacturer field after category field is over
+        setTimeout(() => {
+            const manufacturerEl = document.querySelector('[data-testid="part_manufacturer_id-react-select-container"] input');
+            if(manufacturerEl) {
+                //@ts-ignore
+                manufacturerEl.value = request.product?.brand ?? ''
+                //@ts-ignore
+                manufacturerEl.focus()
+                manufacturerEl.dispatchEvent(new Event("input", {
+                    'bubbles': true
+                }))
+                setTimeout(() => {
+                    let evOptions = {
+                        key: 'Enter',
+                        code: 'Enter',
+                        which: 13,
+                        keyCode: 13,
+                        'bubbles': true
+                    }
+                    manufacturerEl.dispatchEvent(new KeyboardEvent('keydown', evOptions))
+                    manufacturerEl.dispatchEvent(new KeyboardEvent('keyup', evOptions))
 
-    }, 700)
+                    //loading is over
+                    setLoading(false)
+                }, 500)
+            }
+        }, 700)
+    }
+    else if(request.task=='updateImage') {
+        //
+        //     document.querySelector('#file_input').files = container.files;
+        //
+    }
+
+}
+
+const setLoading = (loading:boolean) =>{
+    const loadingEl = document.getElementById('upc-lookup-loading')
+    if(!loadingEl) {
+        return
+    }
+    if(!loading) {
+        loadingEl.style.display = 'none'
+    }
+    else {
+        loadingEl.style.display = 'block'
+    }
 }
 
 export default defineContentScript({

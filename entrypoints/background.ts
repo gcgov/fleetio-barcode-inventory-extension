@@ -1,5 +1,18 @@
 import upcLookup from "@/components/upcLookup";
 
+const getImgFile = async ( url: string ): Promise<DataTransfer> => {
+
+    //get image from rsp.offers and a fetch
+
+
+    //let fileName = 'hasFilename.jpg'
+    // let file = new File([imgBlob], fileName,{type:"image/jpeg", lastModified:new Date().getTime()}, 'utf-8');
+    let container = new DataTransfer();
+    // container.items.add(file);
+
+    return container
+}
+
 export default defineBackground(() => {
   console.log('Hello background!', { id: browser.runtime.id });
 
@@ -17,11 +30,24 @@ export default defineBackground(() => {
           let rsp = await upcLookup.lookupUpc(request.upc)
           console.log(rsp)
 
+
           if(sender.tab?.id) {
-              const response = await browser.tabs.sendMessage(sender.tab.id, {task: "upcProductFill", product:rsp});
+              const productResponse = await browser.tabs.sendMessage(sender.tab.id, {task: "upcProductFill", product:rsp});
               // do something with response here, not outside the function
-              console.log(response)
+              //console.log(productResponse)
+
+              //update image
+              let url = ''
+              if(url.trim()!='') {
+                  const container: DataTransfer = await getImgFile(url)
+                  const imgResponse = await browser.tabs.sendMessage(sender.tab.id, {
+                      task: "updateImage",
+                      files: container.files
+                  });
+                  //console.log(imgResponse)
+              }
           }
+
       }
   );
 });
