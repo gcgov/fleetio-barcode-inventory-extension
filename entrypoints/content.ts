@@ -1,4 +1,4 @@
-import upcLookup from "@/components/upcLookup";
+import upcLookup, {IItem} from "@/components/upcLookup";
 
 export default defineContentScript({
   matches: ['*://*.fleetio.com/*'],
@@ -81,7 +81,7 @@ export default defineContentScript({
 
 
       browser.runtime.onMessage.addListener(
-          function(request:{task:string, product:object|null}, sender, sendResponse) {
+          function(request:{task:string, product:IItem|null}, sender, sendResponse) {
               console.log('update product info on screen')
               console.log(request.product)
           }
