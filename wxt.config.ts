@@ -9,8 +9,7 @@ export default defineConfig({
         },
     },
     manifest: {
-        host_permissions: ['https://api.upcitemdb.com/*'],
-        permissions: ['https://api.upcitemdb.com/*'],
+        host_permissions: ['https://api.upcitemdb.com/*', 'https://*/'],
     },
     vite: () => ({
         plugins: [vue()],

@@ -62,6 +62,7 @@ const waitForFieldToExistCallback = async (elm: Element | null) => {
         a.onclick = ()=>{
             const productInput = document.querySelector('#radix-dialog-container input')
             setLoading(true)
+            //@ts-ignore: value undefined but it really is
             browser.runtime.sendMessage({upc: productInput?.value ?? ''
             } ) }
         elm.after(a, loadingDiv)
@@ -84,7 +85,8 @@ const waitForFieldNotToExistCallback = async () => {
     waitForElm('#radix-dialog-container input').then(waitForFieldToExistCallback);
 }
 
-const updateFields = async (request: { task: string, product: IItem | null }, sender: Runtime.MessageSender) => {
+const updateFields = async (request: { task: string, product: IItem|null|undefined, base64:string|null|undefined }, sender: Runtime.MessageSender) => {
+    console.log(request)
     if(request.task=='upcProductFill') {
         console.log('update product info on screen')
         console.log(request.product)
@@ -166,9 +168,31 @@ const updateFields = async (request: { task: string, product: IItem | null }, se
         }, 700)
     }
     else if(request.task=='updateImage') {
-        //
-        //     document.querySelector('#file_input').files = container.files;
-        //
+
+        //convert base 64 to blob
+        const response = await fetch(request.base64 ?? '');
+        const imageBlob:Blob = await response.blob();
+
+        let fileName = 'image.jpg'
+        let file = new File([imageBlob], fileName, {type: "image/jpeg", lastModified: new Date().getTime()});
+
+        let container = new DataTransfer();
+        container.items.add(file);
+
+        console.log(file)
+        console.log(container)
+
+        const fileEl = document.querySelector('#radix-dialog-container input[type="file"]')
+        if(fileEl) {
+            //@ts-ignore files exists
+            fileEl.files = container.files;
+            fileEl.dispatchEvent(new Event("input", {
+                'bubbles': true
+            }));
+            fileEl.dispatchEvent(new Event("change", {
+                'bubbles': true
+            }))
+        }
     }
 
 }
