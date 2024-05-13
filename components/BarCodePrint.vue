@@ -14,10 +14,17 @@ const createBarCodeErrorMessage: Ref<string> = ref('')
 const preview: Ref<string> = ref('')
 const printers: Ref<PrinterInfo[]> = ref([])
 const selectedPrinter: Ref<PrinterInfo | undefined> = ref(undefined)
+const newBarCode: Ref<string> = ref('')
+
 
 onMounted(async () => {
     await getPrinters()
 })
+
+const updateId = ()=>{
+    let oid: ObjectID = new ObjectID()
+    newBarCode.value = oid.toHexString().toUpperCase()
+}
 
 const generatePrintBarcode = ( previewOnly:boolean=false ) => {
 	if(selectedPrinter.value==undefined) {
@@ -29,28 +36,27 @@ const generatePrintBarcode = ( previewOnly:boolean=false ) => {
     createBarCodeError.value = false
     createBarCodeErrorMessage.value = ''
 
-	//generate id
-    let oid: ObjectID = new ObjectID()
-    let id: string = oid.toHexString().toUpperCase()
-
 	//load label file from xml string
 	try {
-	    console.log('Print bar code for: ' + id)
+	    console.log('Print bar code for: ' + newBarCode.value)
 		console.log(labelXml)
 	    let label = dymo.label.framework.openLabelXml(labelXml)
 
-		//update fields
-	    label.setObjectText('QRCode', id)
-        label.setObjectText('TextCode', id)
-	    label.setObjectText('TextProductTitle', 'test product')
+        updateId()
 
-		//update preview
-		preview.value = 'data:image/png;base64,'+label.render('', selectedPrinter.value?.name ?? '')
+		//update fields
+	    label.setObjectText('QRCode', newBarCode.value)
+        label.setObjectText('TextCode', newBarCode.value)
+	    //label.setObjectText('TextProductTitle', '') //TODO - how to add a product title?
+
+        //update preview
+        //preview.value = 'data:image/png;base64,'+label.render('', selectedPrinter.value?.name ?? '')
 
 		//send to printer
 		if(!previewOnly) {
             label.print(selectedPrinter.value?.name ?? '', '', '')
         }
+
     }
     catch(e:any)
     {
