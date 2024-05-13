@@ -27,6 +27,9 @@ export default class upcLookup {
     }
 
     static lookupUpc = async ( upc:string=''): Promise<IItem|null> => {
+        if(upc=='') {
+            return null
+        }
        const response = await fetch(upcLookup.baseUrl+'lookup?upc='+upc );
        const body = await response.json();
        if(body.code=='OK' && body.items[0]) {

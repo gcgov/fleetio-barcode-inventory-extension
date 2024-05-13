@@ -4,8 +4,11 @@ import UpcLookup from "@/components/UpcLookup.vue";
 </script>
 
 <template>
-  <BarCodePrint />
-  <UpcLookup />
+	<div class="p-5">
+		<BarCodePrint />
+		<hr class="my-5" />
+		<UpcLookup />
+	</div>
 </template>
 
 <style scoped>
