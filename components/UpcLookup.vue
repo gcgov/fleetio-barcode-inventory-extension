@@ -19,7 +19,7 @@ const lookup = async () => {
 	<div class="font-bold text-sm">Lookup Product Details</div>
 
 	<div class="flex gap-2">
-		<input type="text" v-model="upc" @keyup.enter="lookup" class="block w-full p-2.5 ps-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="UPC" />
+		<input type="text" v-model="upc" @keyup.enter="lookup" autofocus class="block w-full p-2.5 ps-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="UPC" />
 		<a @click="lookup" class="btn">
 			<svg v-if="!lookingUp" class="w-4 h-4 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
 				<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>

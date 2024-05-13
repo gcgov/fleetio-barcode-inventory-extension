@@ -2,6 +2,7 @@
 import {onMounted, ref, Ref} from 'vue';
 import ObjectID from "bson-objectid";
 import PrinterInfo = dymo.label.framework.PrinterInfo;
+import labelXml from '@/assets/barcode-label-small.xml?raw'
 
 /*defineProps({
   msg: String,
@@ -10,6 +11,7 @@ import PrinterInfo = dymo.label.framework.PrinterInfo;
 const uiLoadingPrinters: Ref<boolean> = ref(false)
 const createBarCodeError: Ref<boolean> = ref(false)
 const createBarCodeErrorMessage: Ref<string> = ref('')
+const preview: Ref<string> = ref('')
 const printers: Ref<PrinterInfo[]> = ref([])
 const selectedPrinter: Ref<PrinterInfo | undefined> = ref(undefined)
 
@@ -17,23 +19,44 @@ onMounted(async () => {
     await getPrinters()
 })
 
-const generatePrintBarcode = () => {
-    let oid: ObjectID = new ObjectID()
-    let id: string = oid.toHexString()
-
-	//reset error
-    createBarCodeError.value = false
-    createBarCodeErrorMessage.value = ''
-
-    console.log('Print bar code for: ' + id)
-
+const generatePrintBarcode = ( previewOnly:boolean=false ) => {
 	if(selectedPrinter.value==undefined) {
         createBarCodeError.value = true
         createBarCodeErrorMessage.value = 'No printer is selected'
 		return
 	}
-    //dymo.label.framework.printLabel('', '', '', '')
+    //reset error
+    createBarCodeError.value = false
+    createBarCodeErrorMessage.value = ''
 
+	//generate id
+    let oid: ObjectID = new ObjectID()
+    let id: string = oid.toHexString().toUpperCase()
+
+	//load label file from xml string
+	try {
+	    console.log('Print bar code for: ' + id)
+		console.log(labelXml)
+	    let label = dymo.label.framework.openLabelXml(labelXml)
+
+		//update fields
+	    label.setObjectText('QRCode', id)
+        label.setObjectText('TextCode', id)
+	    label.setObjectText('TextProductTitle', 'test product')
+
+		//update preview
+		preview.value = 'data:image/png;base64,'+label.render('', selectedPrinter.value?.name ?? '')
+
+		//send to printer
+		if(!previewOnly) {
+            label.print(selectedPrinter.value?.name ?? '', '', '')
+        }
+    }
+    catch(e:any)
+    {
+        createBarCodeError.value = true
+        createBarCodeErrorMessage.value = e.message || e
+    }
 }
 
 const getPrinters = async () => {
@@ -85,7 +108,7 @@ const getPrinters = async () => {
 			<option v-for="(printer, printerIndex) in printers" :key="printerIndex" :value="printer">{{ printer.name }}</option>
 		</select>
 		<div class="flex justify-between mt-2">
-			<a class="btn sm" @click="generatePrintBarcode">
+			<a class="btn sm" @click="generatePrintBarcode(false)">
 				<svg class="inline w-4 h-4 me-2 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 					<title>printer</title>
 					<path d="M18,3H6V7H18M19,12A1,1 0 0,1 18,11A1,1 0 0,1 19,10A1,1 0 0,1 20,11A1,1 0 0,1 19,12M16,19H8V14H16M19,8H5A3,3 0 0,0 2,11V17H6V21H18V17H22V11A3,3 0 0,0 19,8Z" />
@@ -110,7 +133,7 @@ const getPrinters = async () => {
 			</a>
 		</div>
 
-		<p></p>
+		<img v-if="preview" :src="preview" class="mt-2" alt="Label Preview" />
 	</div>
 
 </template>

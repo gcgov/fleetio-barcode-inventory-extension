@@ -17,5 +17,6 @@ export default defineConfig({
             // Enabling sourcemaps with Vue during development is known to cause problems with Vue
             sourcemap: false,
         },
+        assetsInclude: ["assets/barcode-label-small.xml"],
     }),
 });
