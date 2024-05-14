@@ -1518,20 +1518,16 @@ h5:first-child {
   margin-left: 0.5rem;
 }
 
+.ml-5 {
+  margin-left: 1.25rem;
+}
+
 .mr-0 {
   margin-right: 0px;
 }
 
 .mt-2 {
   margin-top: 0.5rem;
-}
-
-.ml-10 {
-  margin-left: 2.5rem;
-}
-
-.ml-5 {
-  margin-left: 1.25rem;
 }
 
 .mt-4 {
@@ -1582,14 +1578,6 @@ h5:first-child {
   height: 2.25rem;
 }
 
-.max-h-10 {
-  max-height: 2.5rem;
-}
-
-.max-h-20 {
-  max-height: 5rem;
-}
-
 .max-h-36 {
   max-height: 9rem;
 }
@@ -1612,14 +1600,6 @@ h5:first-child {
 
 .w-full {
   width: 100%;
-}
-
-.max-w-10 {
-  max-width: 2.5rem;
-}
-
-.max-w-20 {
-  max-width: 5rem;
 }
 
 .max-w-36 {
