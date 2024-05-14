@@ -22,17 +22,8 @@ const getImgFile = async (url: string, tabId: number): Promise<void> => {
 export default defineBackground(() => {
     console.log('Hello background!', {id: browser.runtime.id});
 
-/*
-    console.log(dymo.label.framework.getPrinters())*/
-
-
     browser.runtime.onMessage.addListener(
         async function (request: { upc: string }, sender, sendResponse) {
-            /*console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-            console.log(sender)
-            console.log(request)*/
 
             console.log('lookup upc ' + request.upc)
 
@@ -46,8 +37,6 @@ export default defineBackground(() => {
                     task: "upcProductFill",
                     product: rsp
                 });
-                // do something with response here, not outside the function
-                //console.log(productResponse)
 
                 let file: File|null = null
                 if (rsp && rsp.images && rsp.images[0]) {
