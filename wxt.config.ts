@@ -9,14 +9,34 @@ export default defineConfig({
         },
     },
     manifest: {
-        host_permissions: ['https://api.upcitemdb.com/*', 'https://*/'],
+        host_permissions: [
+            'https://api.upcitemdb.com/*',
+            'https://*/'
+        ],
+        commands: {
+            "_execute_action": {
+                "suggested_key": {
+                    "default": "Alt+B",
+                    "mac": "Alt+B"
+                },
+                "description": "Open barcode options"
+            }
+        },
     },
     vite: () => ({
         plugins: [vue()],
+        /*optimizeDeps: {
+            include: ['public/dymo.connect.framework.js', 'public/dymo.connect.framework.qrpatch.js'],
+        },*/
         build: {
             // Enabling sourcemaps with Vue during development is known to cause problems with Vue
             sourcemap: false,
+            /*commonjsOptions: {
+                include: ['public/dymo.connect.framework.js', 'public/dymo.connect.framework.qrpatch.js'],
+            },*/
         },
-        assetsInclude: ["assets/barcode-label-small.xml"],
+        assetsInclude: [
+            "assets/barcode-label-small.xml"
+        ],
     }),
 });

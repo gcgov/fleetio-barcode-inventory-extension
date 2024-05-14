@@ -11,6 +11,7 @@ const lookup = async () => {
     lookingUp.value = true
     console.log('Lookup: ' + upc.value)
     data.value = await upcLookup.lookupUpc(upc.value)
+    upc.value = ''
     lookingUp.value = false
 }
 </script>
@@ -19,7 +20,7 @@ const lookup = async () => {
 	<div class="font-bold text-sm">Lookup Product Details</div>
 
 	<div class="flex gap-2">
-		<input type="text" v-model="upc" @keyup.enter="lookup" autofocus class="block w-full p-2.5 ps-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="UPC" />
+		<input type="text" v-model="upc" @keyup.enter="lookup" class="block w-full p-2.5 ps-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="UPC" />
 		<a @click="lookup" class="btn">
 			<svg v-if="!lookingUp" class="w-4 h-4 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
 				<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
@@ -33,6 +34,24 @@ const lookup = async () => {
 			</div>
 		</a>
 	</div>
+
+	<ul v-if="data" class="list-disc ml-5 mt-4">
+		<li v-if="data.upc"><span class="font-bold">UPC</span> {{ data.upc }}</li>
+		<li v-if="data.isbn"><span class="font-bold">ISBN</span> {{ data.isbn }}</li>
+		<li v-if="data.ean"><span class="font-bold">EAN</span> {{ data.ean }}</li>
+		<li v-if="data.title"><span class="font-bold">Title</span> {{ data.title }}</li>
+		<li v-if="data.description"><span class="font-bold">Description</span> {{ data.description }}</li>
+		<li v-if="data.category"><span class="font-bold">Category</span> {{ data.category }}</li>
+		<li v-if="data.brand"><span class="font-bold">Brand</span> {{ data.brand }}</li>
+		<li v-if="data.model"><span class="font-bold">Model</span> {{ data.model }}</li>
+		<li v-if="data.dimension"><span class="font-bold">Dimension</span> {{ data.dimension }}</li>
+		<li v-if="data.weight"><span class="font-bold">Weight</span> {{ data.weight }}</li>
+		<li v-if="data.color"><span class="font-bold">Color</span> {{ data.color }}</li>
+		<li v-if="data.images && data.images[0]">
+			<span class="font-bold">Image</span>
+			<img :src="data.images[0]" class="max-w-36 max-h-36" />
+		</li>
+	</ul>
 </template>
 
 <style scoped>

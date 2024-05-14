@@ -22,6 +22,10 @@ const getImgFile = async (url: string, tabId: number): Promise<void> => {
 export default defineBackground(() => {
     console.log('Hello background!', {id: browser.runtime.id});
 
+/*
+    console.log(dymo.label.framework.getPrinters())*/
+
+
     browser.runtime.onMessage.addListener(
         async function (request: { upc: string }, sender, sendResponse) {
             /*console.log(sender.tab ?
