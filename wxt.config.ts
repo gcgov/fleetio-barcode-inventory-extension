@@ -10,7 +10,8 @@ export default defineConfig({
     },
     manifest: {
         host_permissions: [
-            'https://api.upcitemdb.com/*'
+            'https://api.upcitemdb.com/*',
+            'https://*.fleetio.com/*'
         ],
         commands: {
             "_execute_action": {

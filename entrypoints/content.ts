@@ -213,10 +213,11 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         }
     }
     else if(request.task=='tabChanged') {
+        console.log(document.location.href)
         if(document.location.href.endsWith('parts/new')) {
-            console.log(document.location.href)
             setTimeout(()=>{
                 waitForFieldToExistCallback(document.querySelector('input[name="number"]'))
+                waitForElm('input[name="number"]').then(waitForFieldToExistCallback);
                 setLoading(false)
             }, 2000)
         }
