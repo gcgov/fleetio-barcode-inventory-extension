@@ -10,8 +10,7 @@ export default defineConfig({
     },
     manifest: {
         host_permissions: [
-            'https://api.upcitemdb.com/*',
-            'https://*/'
+            'https://api.upcitemdb.com/*'
         ],
         commands: {
             "_execute_action": {
