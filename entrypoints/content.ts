@@ -60,7 +60,7 @@ const waitForFieldToExistCallback = async (elm: Element | null) => {
         a.style.cursor = 'pointer'
         //@ts-ignore: value undefined but it really is
         a.onclick = ()=>{
-            const productInput = document.querySelector('#radix-dialog-container input')
+            const productInput = elm
             setLoading(true)
             //@ts-ignore: value undefined but it really is
             browser.runtime.sendMessage({upc: productInput?.value ?? ''
@@ -92,7 +92,10 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         console.log(request.product)
 
         //part number field
-        const partNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
+        let partNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
+        if(partNumberEl==null) {
+            partNumberEl = document.querySelector('[data-testid="manufacturer_part_number-input-text"]')
+        }
         //@ts-ignore
         if (partNumberEl) {
             //@ts-ignore
@@ -100,7 +103,10 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         }
 
         //upc field
-        const upcEl = document.querySelector('#radix-dialog-container [data-testid="upc-input-text"]')
+        let upcEl = document.querySelector('#radix-dialog-container [data-testid="upc-input-text"]')
+        if(upcEl==null) {
+            upcEl = document.querySelector('[data-testid="upc-input-text"]')
+        }
         //@ts-ignore
         if (upcEl) {
             //@ts-ignore
@@ -108,7 +114,10 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         }
 
         //description field
-        const descriptionEl = document.querySelector('#radix-dialog-container [name="description"]')
+        let descriptionEl = document.querySelector('#radix-dialog-container [name="description"]')
+        if(descriptionEl==null) {
+            descriptionEl = document.querySelector('[data-testid="description-textarea"]')
+        }
         //@ts-ignore
         if (descriptionEl) {
             //@ts-ignore
@@ -117,7 +126,10 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         }
 
         //category filed
-        const categoryEl = document.querySelector('#radix-dialog-container [data-testid="part_category_id-react-select-container"] input');
+        let categoryEl = document.querySelector('#radix-dialog-container [data-testid="part_category_id-react-select-container"] input');
+        if(categoryEl==null) {
+            categoryEl = document.querySelector('[data-testid="part_category_id-react-select-container"] input');
+        }
         if (categoryEl) {
             //@ts-ignore
             categoryEl.value = request.product?.category ?? ''
@@ -141,7 +153,10 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
 
         //manufacturer field after category field is over
         setTimeout(() => {
-            const manufacturerEl = document.querySelector('[data-testid="part_manufacturer_id-react-select-container"] input');
+            let manufacturerEl = document.querySelector('#radix-dialog-container [data-testid="part_manufacturer_id-react-select-container"] input');
+            if(manufacturerEl==null) {
+                manufacturerEl = document.querySelector('[data-testid="part_manufacturer_id-react-select-container"] input');
+            }
             if(manufacturerEl) {
                 //@ts-ignore
                 manufacturerEl.value = request.product?.brand ?? ''
@@ -182,7 +197,10 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         console.log(file)
         console.log(container)
 
-        const fileEl = document.querySelector('#radix-dialog-container input[type="file"]')
+        let fileEl = document.querySelector('#radix-dialog-container input[type="file"]')
+        if(fileEl==null) {
+            fileEl = document.querySelector('input[type="file"]')
+        }
         if(fileEl) {
             //@ts-ignore files exists
             fileEl.files = container.files;
@@ -192,6 +210,15 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
             fileEl.dispatchEvent(new Event("change", {
                 'bubbles': true
             }))
+        }
+    }
+    else if(request.task=='tabChanged') {
+        if(document.location.href.endsWith('parts/new')) {
+            console.log(document.location.href)
+            setTimeout(()=>{
+                waitForFieldToExistCallback(document.querySelector('input[name="number"]'))
+                setLoading(false)
+            }, 2000)
         }
     }
 
@@ -215,10 +242,14 @@ export default defineContentScript({
     main() {
 
         //9781541736696
-
-        //console.log('Watching for "add product" popup');
         waitForElm('#radix-dialog-container input').then(waitForFieldToExistCallback);
 
+        if(document.location.href.endsWith('parts/new')) {
+            setTimeout(()=>{
+                waitForFieldToExistCallback(document.querySelector('input[name="number"]'))
+                setLoading(false)
+            }, 2000)
+        }
 
         browser.runtime.onMessage.addListener(updateFields);
 

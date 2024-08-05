@@ -48,4 +48,11 @@ export default defineBackground(() => {
 
         }
     );
+
+    browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+        if (changeInfo.url) {
+            await browser.tabs.sendMessage(tabId, {  task: "tabChanged", url: tab.url });
+        }
+    });
+
 });
