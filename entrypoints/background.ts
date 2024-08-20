@@ -31,7 +31,6 @@ export default defineBackground(() => {
             let rsp = await upcLookup.lookupUpc(request.upc)
             console.log(rsp)
 
-
             if (sender.tab?.id) {
                 const productResponse = await browser.tabs.sendMessage(sender.tab.id, {
                     task: "upcProductFill",

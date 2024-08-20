@@ -50,12 +50,21 @@ const waitForElmToNotExist = async (selector: string): Promise<boolean> => {
 }
 
 
-const waitForFieldToExistCallback = async (elm: Element | null) => {
-    if (elm) {
+const addLookupUPCLinkAndLoading = async (elm: Element | null) => {
+    let existingUpcLookupLinkEls = document.getElementsByClassName('upc-lookup-link')
+    let existingUpcLookupLoadingEls = document.getElementsByClassName('upc-lookup-loading-container')
+    if (elm && (existingUpcLookupLoadingEls.length==0 || existingUpcLookupLinkEls.length==0)) {
+        elm.addEventListener("input", (event) => {
+            console.log('change')
+            console.log(event)
+        });
         let loadingDiv = document.createElement('div')
+        loadingDiv.classList.add('upc-lookup-loading-container')
         loadingDiv.style.display = 'inline-block'
-        loadingDiv.innerHTML = '<svg style="display: block;    width: 100px; height: 20px;" version="1.1" id="upc-lookup-loading" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve"><circle fill="#006cb8" stroke="none" cx="6" cy="50" r="6"><animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.1"></animate></circle><circle fill="#006cb8" stroke="none" cx="26" cy="50" r="6"><animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.2"></animate></circle><circle fill="#006cb8" stroke="none" cx="46" cy="50" r="6"><animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.3"></animate></circle></svg>'
+        loadingDiv.innerHTML = '<svg style="display: block;    width: 100px; height: 20px;" version="1.1" class="upc-lookup-loading" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve"><circle fill="#006cb8" stroke="none" cx="6" cy="50" r="6"><animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.1"></animate></circle><circle fill="#006cb8" stroke="none" cx="26" cy="50" r="6"><animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.2"></animate></circle><circle fill="#006cb8" stroke="none" cx="46" cy="50" r="6"><animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.3"></animate></circle></svg>'
+
         let a = document.createElement("a")
+        loadingDiv.classList.add('upc-lookup-link')
         a.innerText = 'Lookup UPC'
         a.style.cursor = 'pointer'
         //@ts-ignore: value undefined but it really is
@@ -65,7 +74,17 @@ const waitForFieldToExistCallback = async (elm: Element | null) => {
             //@ts-ignore: value undefined but it really is
             browser.runtime.sendMessage({upc: productInput?.value ?? ''
             } ) }
-        elm.after(a, loadingDiv)
+
+
+        let messageDiv = document.createElement("div")
+        messageDiv.classList.add('upc-lookup-message')
+        messageDiv.classList.add('text-sm')
+        messageDiv.classList.add('text-red-600')
+        messageDiv.style.display = 'inline'
+        messageDiv.style.fontStyle = 'italic'
+        messageDiv.style.marginLeft = '10px'
+
+        elm.after(a, loadingDiv, messageDiv)
 
         //@ts-ignore: value undefined but it really is
         let upcValue = elm?.value ?? ''
@@ -77,12 +96,14 @@ const waitForFieldToExistCallback = async (elm: Element | null) => {
         //do lookup in background
         browser.runtime.sendMessage({upc: upcValue})
 
+        //watch for the modal window to disappear and attach a callback
         waitForElmToNotExist('#radix-dialog-container input').then(waitForFieldNotToExistCallback)
     }
 }
 const waitForFieldNotToExistCallback = async () => {
     //console.log('Popup is gone')
-    waitForElm('#radix-dialog-container input').then(waitForFieldToExistCallback);
+    //modal window has closed; wait for the modal window to appear again and add the lookup link and loading
+    waitForElm('#radix-dialog-container input').then((el)=>{ setTimeout(()=>{ addLookupUPCLinkAndLoading(el) }, 500)});
 }
 
 const updateFields = async (request: { task: string, product: IItem|null|undefined, base64:string|null|undefined }, sender: Runtime.MessageSender) => {
@@ -90,6 +111,14 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
     if(request.task=='upcProductFill') {
         console.log('update product info on screen')
         console.log(request.product)
+
+        //product not found
+            if (request.product === null) {
+                setMessage('Product details for this UPC not found. This does not mean it is an invalid UPC, just that there is no detail found from our UPC lookup provider.')
+                setLoading(false)
+            } else {
+                setMessage('')
+            }
 
         //part number field
         let partNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
@@ -216,8 +245,8 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         console.log(document.location.href)
         if(document.location.href.endsWith('parts/new')) {
             setTimeout(()=>{
-                waitForFieldToExistCallback(document.querySelector('input[name="number"]'))
-                waitForElm('input[name="number"]').then(waitForFieldToExistCallback);
+                addLookupUPCLinkAndLoading(document.querySelector('input[name="number"]'))
+                waitForElm('input[name="number"]').then(addLookupUPCLinkAndLoading);
                 setLoading(false)
             }, 2000)
         }
@@ -226,16 +255,31 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
 }
 
 const setLoading = (loading:boolean) =>{
-    const loadingEl = document.getElementById('upc-lookup-loading')
-    if(!loadingEl) {
+    const loadingEls = document.getElementsByClassName('upc-lookup-loading')
+    if(loadingEls.length==0) {
         return
     }
-    if(!loading) {
-        loadingEl.style.display = 'none'
+
+    for(let i=0; i<loadingEls.length; i++) {
+        if(!loading) {
+            //@ts-ignore style exists
+            loadingEls[i].style.display = 'none'
+        }
+        else {
+            //@ts-ignore style exists
+            loadingEls[i].style.display = 'block'
+        }
     }
-    else {
-        loadingEl.style.display = 'block'
+
+}
+const setMessage = (message:string) =>{
+    const messageEl = document.querySelector('.upc-lookup-message')
+    if(!messageEl) {
+        return
     }
+
+    messageEl.innerHTML = message
+
 }
 
 export default defineContentScript({
@@ -243,11 +287,11 @@ export default defineContentScript({
     main() {
 
         //9781541736696
-        waitForElm('#radix-dialog-container input').then(waitForFieldToExistCallback);
+        waitForElm('#radix-dialog-container input').then(addLookupUPCLinkAndLoading);
 
         if(document.location.href.endsWith('parts/new')) {
             setTimeout(()=>{
-                waitForFieldToExistCallback(document.querySelector('input[name="number"]'))
+                addLookupUPCLinkAndLoading(document.querySelector('input[name="number"]'))
                 setLoading(false)
             }, 2000)
         }

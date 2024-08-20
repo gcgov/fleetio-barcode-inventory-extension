@@ -11,7 +11,8 @@ export default defineConfig({
     manifest: {
         host_permissions: [
             'https://api.upcitemdb.com/*',
-            'https://*.fleetio.com/*'
+            'https://*.fleetio.com/*',
+            'https://*/' //this is required for images to load from any domain
         ],
         commands: {
             "_execute_action": {
