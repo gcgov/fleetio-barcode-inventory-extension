@@ -69,11 +69,9 @@ const addLookupUPCLinkAndLoading = async (elm: Element | null) => {
         a.style.cursor = 'pointer'
         //@ts-ignore: value undefined but it really is
         a.onclick = ()=>{
-            const productInput = elm
             setLoading(true)
             //@ts-ignore: value undefined but it really is
-            browser.runtime.sendMessage({upc: productInput?.value ?? ''
-            } ) }
+            browser.runtime.sendMessage({upc: elm?.value ?? ''} ) }
 
 
         let messageDiv = document.createElement("div")
@@ -97,13 +95,13 @@ const addLookupUPCLinkAndLoading = async (elm: Element | null) => {
         browser.runtime.sendMessage({upc: upcValue})
 
         //watch for the modal window to disappear and attach a callback
-        waitForElmToNotExist('#radix-dialog-container input').then(waitForFieldNotToExistCallback)
+        waitForElmToNotExist(selectorProductNumber).then(waitForFieldNotToExistCallback)
     }
 }
 const waitForFieldNotToExistCallback = async () => {
     //console.log('Popup is gone')
     //modal window has closed; wait for the modal window to appear again and add the lookup link and loading
-    waitForElm('#radix-dialog-container input').then((el)=>{ setTimeout(()=>{ addLookupUPCLinkAndLoading(el) }, 500)});
+    waitForElm(selectorProductNumber).then((el)=>{ setTimeout(()=>{ addLookupUPCLinkAndLoading(el) }, 500)});
 }
 
 const updateFields = async (request: { task: string, product: IItem|null|undefined, base64:string|null|undefined }, sender: Runtime.MessageSender) => {
@@ -121,14 +119,35 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
             }
 
         //part number field
-        let partNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
+        let manpartNumberEl = document.querySelector('#radix-dialog-container [data-testid="manufacturer_part_number-input-text"]')
+        if(manpartNumberEl==null) {
+            manpartNumberEl = document.querySelector('[data-testid="manufacturer_part_number-input-text"]')
+        }
+        //@ts-ignore
+        if (manpartNumberEl) {
+            //@ts-ignore
+            manpartNumberEl.value = request.product?.model ?? ''
+        }
+
+        //part number field
+        let partNumberEl = document.querySelector('#radix-dialog-container [name="number-input-text"]')
         if(partNumberEl==null) {
-            partNumberEl = document.querySelector('[data-testid="manufacturer_part_number-input-text"]')
+            partNumberEl = document.querySelector('[data-testid="number-input-text"]')
         }
         //@ts-ignore
         if (partNumberEl) {
+            let partnumbervalue = request.product?.model
+            if(!partnumbervalue) {
+                partnumbervalue = request.product?.upc
+            }
+            if(!partnumbervalue) {
+                partnumbervalue = request.product?.ean
+            }
+            if(!partnumbervalue) {
+                partnumbervalue = ''
+            }
             //@ts-ignore
-            partNumberEl.value = request.product?.model ?? ''
+            partNumberEl.value = partnumbervalue
         }
 
         //upc field
@@ -245,8 +264,8 @@ const updateFields = async (request: { task: string, product: IItem|null|undefin
         console.log(document.location.href)
         if(document.location.href.endsWith('parts/new')) {
             setTimeout(()=>{
-                addLookupUPCLinkAndLoading(document.querySelector('input[name="number"]'))
-                waitForElm('input[name="number"]').then(addLookupUPCLinkAndLoading);
+                addLookupUPCLinkAndLoading(document.querySelector('input[name="upc"]'))
+                waitForElm('input[name="upc"]').then(addLookupUPCLinkAndLoading);
                 setLoading(false)
             }, 2000)
         }
@@ -287,11 +306,11 @@ export default defineContentScript({
     main() {
 
         //9781541736696
-        waitForElm('#radix-dialog-container input').then(addLookupUPCLinkAndLoading);
+        waitForElm(selectorProductNumber).then(addLookupUPCLinkAndLoading);
 
         if(document.location.href.endsWith('parts/new')) {
             setTimeout(()=>{
-                addLookupUPCLinkAndLoading(document.querySelector('input[name="number"]'))
+                addLookupUPCLinkAndLoading(document.querySelector('input[name="upc"]'))
                 setLoading(false)
             }, 2000)
         }
